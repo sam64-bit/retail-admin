@@ -1,5 +1,6 @@
 import { FiHome, FiShoppingCart, FiUsers } from "react-icons/fi";
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 
 function Layout({ children }) {
   const location = useLocation();
@@ -43,35 +44,18 @@ function Layout({ children }) {
         </nav>
       </aside>
 
-      {/* Main */}
-      <div className="flex-1 flex flex-col">
-        
-        {/* Navbar */}
-        <header className="bg-white border-b px-6 py-4 flex justify-between items-center shadow-sm">
-          
-          <h1 className="text-lg font-semibold text-gray-800">
-            {menu.find((m) => m.path === location.pathname)?.name || "Dashboard"}
-          </h1>
+      {/* Main Content ONLY (no header now) */}
+      <div className="flex-1">
 
-          <div className="flex items-center gap-4">
-            
-            {/* Search Input */}
-            <input
-              type="text"
-              placeholder="Search..."
-              className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-
-            {/* Profile */}
-            <div className="w-9 h-9 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full"></div>
-          </div>
-
-        </header>
-
-        {/* Content */}
-        <main className="p-6">
+        <motion.main
+          key={location.pathname}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="p-6"
+        >
           {children}
-        </main>
+        </motion.main>
 
       </div>
     </div>

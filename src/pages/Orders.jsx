@@ -11,29 +11,30 @@ function Orders() {
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const [page, setPage] = useState(1);
-  const itemsPerPage = 3;
+  const itemsPerPage = 10;
 
-  // Fetch data
+  // 🔥 Fetch ALL data once
   useEffect(() => {
-    fetchOrders().then((data) => {
-      setOrders(data);
+    setLoading(true);
+
+    fetchOrders(1, 100).then((res) => {
+      setOrders(res.data);
       setLoading(false);
     });
   }, []);
 
-  // Loading state
   if (loading) {
     return <div className="text-center p-10 text-lg">Loading orders...</div>;
   }
 
-  // Filter logic
+  // 🔍 Global filter (ALL data)
   const filtered = orders
     .filter((o) =>
       o.customer.toLowerCase().includes(search.toLowerCase())
     )
     .filter((o) => (status === "All" ? true : o.status === status));
 
-  // Pagination logic
+  // 📄 Pagination AFTER filter
   const start = (page - 1) * itemsPerPage;
   const paginated = filtered.slice(start, start + itemsPerPage);
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
@@ -49,9 +50,12 @@ function Orders() {
           <input
             type="text"
             placeholder="Search customer..."
-            className="border px-3 py-2 rounded-lg"
+            className="border px-3 py-2 rounded-lg focus:ring-2 focus:ring-indigo-500"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1); // reset page
+            }}
           />
 
           <select
@@ -59,7 +63,7 @@ function Orders() {
             value={status}
             onChange={(e) => {
               setStatus(e.target.value);
-              setPage(1); // reset page on filter change
+              setPage(1); // reset page
             }}
           >
             <option>All</option>
@@ -73,7 +77,8 @@ function Orders() {
       {/* Table */}
       <div className="bg-white rounded-xl shadow overflow-hidden">
         <table className="w-full text-left">
-          <thead className="bg-gray-50 text-gray-600 text-sm">
+
+          <thead className="bg-indigo-50 text-indigo-600 text-sm">
             <tr>
               <th className="p-4">Order ID</th>
               <th className="p-4">Customer</th>
@@ -84,17 +89,24 @@ function Orders() {
 
           <tbody>
             {paginated.map((order) => (
-              <tr
-                key={order.id}
-                onClick={() => setSelectedOrder(order)}
-                className="border-t hover:bg-gray-50 cursor-pointer"
-              >
-                <td className="p-4">{order.id}</td>
+              <tr key={order.id} className="border-t hover:bg-gray-50">
+
+                {/* Clickable ID */}
+                <td
+                  className="p-4 text-indigo-600 font-medium cursor-pointer hover:underline"
+                  onClick={() => setSelectedOrder(order)}
+                >
+                  {order.id}
+                </td>
+
                 <td className="p-4">{order.customer}</td>
+
                 <td className="p-4">
                   <Badge status={order.status} />
                 </td>
+
                 <td className="p-4">{order.amount}</td>
+
               </tr>
             ))}
 
@@ -106,6 +118,7 @@ function Orders() {
               </tr>
             )}
           </tbody>
+
         </table>
       </div>
 
@@ -126,7 +139,7 @@ function Orders() {
 
           <button
             className="px-3 py-1 border rounded disabled:opacity-50"
-            disabled={page === totalPages || totalPages === 0}
+            disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
           >
             Next
@@ -134,24 +147,44 @@ function Orders() {
         </div>
       </div>
 
-      {/* Order Detail Drawer */}
+      {/* Drawer */}
       {selectedOrder && (
-        <div className="fixed top-0 right-0 w-80 h-full bg-white shadow-lg p-5 z-50">
-          <h2 className="text-lg font-semibold mb-4">Order Details</h2>
+        <div className="fixed top-0 right-0 w-96 h-full bg-white shadow-lg p-6 z-50 overflow-y-auto">
 
-          <p><strong>ID:</strong> {selectedOrder.id}</p>
-          <p><strong>Customer:</strong> {selectedOrder.customer}</p>
-          <p><strong>Status:</strong> {selectedOrder.status}</p>
-          <p><strong>Amount:</strong> {selectedOrder.amount}</p>
+          <h2 className="text-xl font-semibold mb-6">Order Details</h2>
+
+          <div className="space-y-3 text-sm">
+
+            <p><strong>ID:</strong> {selectedOrder.id}</p>
+            <p><strong>Customer:</strong> {selectedOrder.customer}</p>
+
+            <p>
+              <strong>Status:</strong>
+              <span className="ml-2">
+                <Badge status={selectedOrder.status} />
+              </span>
+            </p>
+
+            <p><strong>Amount:</strong> {selectedOrder.amount}</p>
+
+            <hr className="my-3" />
+
+            <p><strong>Product:</strong> {selectedOrder.product}</p>
+            <p><strong>Delivery Address:</strong> {selectedOrder.address}</p>
+            <p><strong>Order Date:</strong> {selectedOrder.date}</p>
+
+          </div>
 
           <button
             onClick={() => setSelectedOrder(null)}
-            className="mt-4 px-4 py-2 bg-indigo-500 text-white rounded"
+            className="mt-6 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
           >
             Close
           </button>
+
         </div>
       )}
+
     </div>
   );
 }

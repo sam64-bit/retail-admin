@@ -1,23 +1,53 @@
-// Simulate API delay
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
-// Orders API
-export const fetchOrders = async () => {
-  await delay(800);
-  return [
-    { id: "#1001", customer: "John", status: "Pending", amount: "$120" },
-    { id: "#1002", customer: "Alice", status: "Delivered", amount: "$250" },
-    { id: "#1003", customer: "Bob", status: "Cancelled", amount: "$80" },
-    { id: "#1004", customer: "Sam", status: "Pending", amount: "$140" },
-    { id: "#1005", customer: "David", status: "Delivered", amount: "$300" },
-  ];
+const names = ["John", "Alice", "Bob", "Sam", "David"];
+const statuses = ["Pending", "Delivered", "Cancelled"];
+
+const products = ["Laptop", "Phone", "Headphones", "Shoes", "Watch"];
+const cities = ["Chennai", "Bangalore", "Mumbai", "Delhi", "Hyderabad"];
+
+const generateOrders = () => {
+  const orders = [];
+
+  for (let i = 1; i <= 100; i++) {
+    orders.push({
+      id: `#${1000 + i}`,
+      customer: names[Math.floor(Math.random() * names.length)],
+      status: statuses[Math.floor(Math.random() * statuses.length)],
+      amount: `$${Math.floor(Math.random() * 500 + 50)}`,
+
+      // 🔥 NEW FIELDS
+      product: products[Math.floor(Math.random() * products.length)],
+      address: cities[Math.floor(Math.random() * cities.length)],
+      date: new Date(
+        2024,
+        Math.floor(Math.random() * 12),
+        Math.floor(Math.random() * 28) + 1
+      ).toISOString().split("T")[0],
+    });
+  }
+
+  return orders;
 };
 
-// Dashboard stats API
-export const fetchDashboardStats = async () => {
-  await delay(600);
+const allOrders = generateOrders();
+
+export const fetchOrders = async (page = 1, limit = 10) => {
+  await delay(500);
+
+  const start = (page - 1) * limit;
+
   return {
-    totalOrders: 1240,
+    data: allOrders.slice(start, start + limit),
+    total: allOrders.length,
+  };
+};
+
+export const fetchDashboardStats = async () => {
+  await delay(400);
+
+  return {
+    totalOrders: allOrders.length,
     revenue: "$32,400",
     customers: 860,
   };
